@@ -1,0 +1,6 @@
+@dotnetCorrelationId_HostAddress = http://localhost:5043
+
+GET {{dotnetCorrelationId_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
