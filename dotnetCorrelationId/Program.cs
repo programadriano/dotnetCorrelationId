@@ -1,5 +1,7 @@
 using dotnetCorrelationId.Infra;
 using dotnetCorrelationId.Infra.Middleware;
+using dotnetCorrelationId.Models;
+using dotnetCorrelationId.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,17 @@ builder.Services.AddSwaggerGen();
 
 #region [DI]
 builder.Services.AddCorrelationIdGenerator();
+
+builder.Services.AddTransient<CreditCardPayment>();
+builder.Services.AddTransient<PayPalPayment>();
+builder.Services.AddTransient<BitcoinPayment>();
+builder.Services.AddTransient(typeof(BaseLogger<>));
+
+
+
+builder.Services.AddTransient<IPaymentService, PaymentService>();
+
+
 #endregion
 
 var app = builder.Build();

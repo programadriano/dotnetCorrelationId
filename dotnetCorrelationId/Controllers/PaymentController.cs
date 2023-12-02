@@ -1,48 +1,31 @@
 using dotnetCorrelationId.Infra;
-using dotnetCorrelationId.Models;
+using dotnetCorrelationId.Request;
+using dotnetCorrelationId.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace PaymentAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class PaymentController(
-        ICorrelationIdGenerator correlationIdGenerator,
-        ILogger<PaymentController> logger
+        BaseLogger<PaymentController> logger,
+        IPaymentService paymentProcessorService
     ) : ControllerBase
     {
-        private readonly ICorrelationIdGenerator _correlationIdGenerator = correlationIdGenerator;
-        private readonly ILogger<PaymentController> _logger = logger;
+        private readonly BaseLogger<PaymentController> _logger = logger;
+        private readonly IPaymentService _paymentProcessorService = paymentProcessorService;
+
 
         [HttpPost]
-        public IActionResult ProcessPayment([FromBody] Payment payment)
+        public IActionResult ProcessPayment([FromBody] PaymentRequest payment)
         {
-            var correlationId = _correlationIdGenerator.Get();
-            _logger.LogInformation($"Iniciando processo de pagamento {correlationId}");
+            _logger.LogInformation($"Iniciando processo de pagamento");
 
-            var result = payment.Method switch
-            {
-                "CartaoCredito"
-                    => (
-                        "Método de pagamento selecionado: Cartão de crédito",
-                        "Pagamento com cartão de crédito realizado com sucesso!"
-                    ),
-                "PayPal"
-                    => (
-                        "Método de pagamento selecionado: PayPal",
-                        "Pagamento com PayPal realizado com sucesso!"
-                    ),
-                "Bitcoin"
-                    => (
-                        "Método de pagamento selecionado: Bitcoin",
-                        "Pagamento com Bitcoin realizado com sucesso!"
-                    ),
-                _ => ("Método de pagamento inválido.", "Método de pagamento inválido.")
-            };
+            var result = _paymentProcessorService.ProcessPayment(payment.Method);
 
-            _logger.LogInformation(result.Item1 + " - " + correlationId);
-            return Ok(new { msg = result.Item2 });
+            _logger.LogInformation(result);
+
+            return Ok(new { msg = result });
         }
     }
 }
